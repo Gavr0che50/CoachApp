@@ -7,8 +7,8 @@ plugins {
 
 tasks.register("projectCheck") {
     group = "verification"
-    description = "Runs the minimum checks expected before opening a PR."
-    dependsOn(":shared:testDebugUnitTest")
+    description = "Runs the minimum checks before opening a PR."
+    dependsOn(":core:testDebugUnitTest")
     dependsOn(":app:assembleDebug")
     dependsOn(":wear:assembleDebug")
 }
