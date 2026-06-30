@@ -17,4 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "CoachApp"
 include(":app")
 include(":wear")
-include(":shared")
+include(":core")
