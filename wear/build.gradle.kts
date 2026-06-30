@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":shared"))
+    implementation(project(":core"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.wear.compose.foundation)
     implementation(libs.androidx.wear.compose.material)
