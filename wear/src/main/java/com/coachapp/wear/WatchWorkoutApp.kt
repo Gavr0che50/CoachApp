@@ -16,7 +16,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.OutlinedButton
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import com.coachapp.core.DefaultProgram
@@ -48,7 +47,7 @@ fun WatchWorkoutApp() {
                     Text(block.exercise.name, style = MaterialTheme.typography.title2, textAlign = TextAlign.Center)
                     Text("Serie ${set.index}/${block.sets.size}")
                     Text("${set.repsMin}-${set.repsMax} reps")
-                    Text("${set.weightKg} kg · repos ${set.restSeconds}s", textAlign = TextAlign.Center)
+                    Text("${set.weightKg} kg - repos ${set.restSeconds}s", textAlign = TextAlign.Center)
                     Button(onClick = {
                         completedSets += 1
                         val nextSet = setIndex + 1
@@ -66,7 +65,7 @@ fun WatchWorkoutApp() {
                     }) {
                         Text("Valider")
                     }
-                    OutlinedButton(onClick = { done = true }) {
+                    Button(onClick = { done = true }) {
                         Text("Terminer")
                     }
                 }
