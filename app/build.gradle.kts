@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":shared"))
+    implementation(project(":core"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.health.connect.client)
