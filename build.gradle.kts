@@ -1,0 +1,14 @@
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+}
+
+tasks.register("projectCheck") {
+    group = "verification"
+    description = "Runs the minimum checks expected before opening a PR."
+    dependsOn(":shared:testDebugUnitTest")
+    dependsOn(":app:assembleDebug")
+    dependsOn(":wear:assembleDebug")
+}
