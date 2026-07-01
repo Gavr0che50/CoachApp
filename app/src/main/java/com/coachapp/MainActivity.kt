@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
-import androidx.health.connect.client.PermissionController
 import com.coachapp.core.WatchProtocol
 import com.coachapp.ui.CoachAppUi
 import com.coachapp.watch.WearActionEvent
@@ -29,12 +28,6 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
         // Notifications are optional; if denied, the app still saves and displays summaries.
     }
 
-    private val healthPermissionLauncher = registerForActivityResult(
-        PermissionController.createRequestPermissionResultContract()
-    ) {
-        // The sync action checks the final grant state before reading sensitive data.
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermissionIfNeeded()
@@ -48,7 +41,7 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
                 dailyHealthActivity = coachApp::dailyHealthActivity,
                 wearActionEvent = wearActionEvent.value,
                 onRequestHealthConnectPermissions = {
-                    healthPermissionLauncher.launch(coachApp.healthConnectReadPermissions())
+                    coachApp.requestSamsungHealthPermissions(this)
                 },
                 onSyncHealthConnect = coachApp::syncHealthConnect,
                 userProfile = coachApp::userProfile,

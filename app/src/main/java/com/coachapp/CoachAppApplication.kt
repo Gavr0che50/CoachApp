@@ -12,8 +12,8 @@ import com.coachapp.data.UserProfileSource
 import com.coachapp.data.effectiveBodySnapshot
 import com.coachapp.data.local.CoachDatabase
 import com.coachapp.health.DailyHealthActivityResult
-import com.coachapp.health.HealthConnectHealthDataGateway
 import com.coachapp.health.HealthSyncResult
+import com.coachapp.health.SamsungFirstHealthDataGateway
 import com.coachapp.notifications.DailyActivityInsightScheduler
 import com.coachapp.notifications.SessionSummaryNotifier
 import com.coachapp.notifications.WorkoutReminderScheduler
@@ -28,8 +28,8 @@ class CoachAppApplication : Application() {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val database: CoachDatabase by lazy { CoachDatabase.create(this) }
     private val repository: CoachRepository by lazy { CoachRepository(database) }
-    private val healthDataGateway: HealthConnectHealthDataGateway by lazy {
-        HealthConnectHealthDataGateway(this)
+    private val healthDataGateway: SamsungFirstHealthDataGateway by lazy {
+        SamsungFirstHealthDataGateway(this)
     }
     private val summaryNotifier: SessionSummaryNotifier by lazy { SessionSummaryNotifier(this) }
 
@@ -54,12 +54,13 @@ class CoachAppApplication : Application() {
 
     suspend fun dailyHealthActivity(): DailyHealthActivityResult =
         withContext(Dispatchers.IO) {
-            val requiredPermissions = HealthConnectHealthDataGateway.DAILY_ACTIVITY_READ_PERMISSIONS
+            val requiredPermissions = SamsungFirstHealthDataGateway.DAILY_ACTIVITY_READ_PERMISSIONS
             val missingPermissions = requiredPermissions - healthDataGateway.grantedPermissions()
             if (missingPermissions.isNotEmpty()) {
                 return@withContext DailyHealthActivityResult(
                     snapshots = emptyList(),
-                    missingNote = "Autorisations Health Connect activite manquantes"
+                    missingNote = healthDataGateway.samsungAvailabilityNote()
+                        ?: "Autorisations Samsung Health activite manquantes"
                 )
             }
 
@@ -73,12 +74,18 @@ class CoachAppApplication : Application() {
             }
             DailyHealthActivityResult(
                 snapshots = if (hasAnyHealthData) snapshots else emptyList(),
-                missingNote = if (hasAnyHealthData) null else "Aucune donnee Health Connect sur la periode"
+                missingNote = if (hasAnyHealthData) null else "Aucune donnee Samsung Health sur la periode"
             )
         }
 
     fun healthConnectReadPermissions(): Set<String> {
-        return HealthConnectHealthDataGateway.READ_PERMISSIONS
+        return healthDataGateway.healthConnectReadPermissions()
+    }
+
+    fun requestSamsungHealthPermissions(activity: android.app.Activity) {
+        applicationScope.launch(Dispatchers.Main) {
+            healthDataGateway.requestSamsungPermissions(activity)
+        }
     }
 
     suspend fun syncHealthConnect(): HealthSyncResult =
@@ -90,7 +97,10 @@ class CoachAppApplication : Application() {
                     bodySnapshot = null,
                     restingHeartRateBpm = null,
                     activeEnergyKcalToday = null,
-                    missingNotes = listOf("Autorisations Health Connect manquantes")
+                    missingNotes = listOf(
+                        healthDataGateway.samsungAvailabilityNote()
+                            ?: "Autorisations Samsung Health manquantes"
+                    )
                 )
             }
 

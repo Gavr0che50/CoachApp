@@ -122,7 +122,7 @@ fun CoachAppUi(
     latestSessionSummary: suspend () -> SessionSummarySnapshot? = { null },
     dailyCoachActivity: suspend () -> List<DailyCoachActivitySnapshot> = { emptyList() },
     dailyHealthActivity: suspend () -> DailyHealthActivityResult = {
-        DailyHealthActivityResult(emptyList(), "Health Connect indisponible")
+        DailyHealthActivityResult(emptyList(), "Samsung Health indisponible")
     },
     wearActionEvent: WearActionEvent? = null,
     onRequestHealthConnectPermissions: () -> Unit = {},
@@ -131,7 +131,7 @@ fun CoachAppUi(
             bodySnapshot = null,
             restingHeartRateBpm = null,
             activeEnergyKcalToday = null,
-            missingNotes = listOf("Health Connect indisponible")
+            missingNotes = listOf("Samsung Health indisponible")
         )
     },
     userProfile: suspend () -> UserProfileSnapshot? = { null },
@@ -235,7 +235,7 @@ private fun CoachAppContent(
 
     suspend fun refreshDailyActivity() {
         dailyActivityStatus = "Chargement activite"
-        dailyHealthActivityStatus = "Chargement Health Connect"
+        dailyHealthActivityStatus = "Chargement Samsung Health"
         runCatching {
             dailyCoachActivity()
         }.onSuccess { snapshots ->
@@ -254,10 +254,10 @@ private fun CoachAppContent(
         }.onSuccess { result ->
             dailyHealthSnapshots = result.snapshots
             dailyHealthActivityStatus = result.missingNote
-                ?: "Health Connect: energie active et pas disponibles"
+                ?: "Samsung Health: energie active et pas disponibles"
         }.onFailure {
             dailyHealthSnapshots = emptyList()
-            dailyHealthActivityStatus = "Health Connect indisponible"
+            dailyHealthActivityStatus = "Samsung Health indisponible"
         }
     }
 
@@ -494,21 +494,19 @@ private fun CoachAppContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            UpcomingWorkoutsCard(upcomingWorkouts)
-
             HealthConnectCard(
                 status = healthSyncStatus,
                 result = healthSyncResult,
                 onRequestPermissions = onRequestHealthConnectPermissions,
                 onSync = {
-                    healthSyncStatus = "Synchronisation en cours"
+                    healthSyncStatus = "Synchronisation Samsung en cours"
                     scope.launch {
                         runCatching { onSyncHealthConnect() }
                             .onSuccess { result ->
                                 healthSyncResult = result
                                 refreshDailyActivity()
                                 healthSyncStatus = if (result.missingNotes.isEmpty()) {
-                                    "Donnees sante synchronisees"
+                                    "Donnees Samsung synchronisees"
                                 } else {
                                     "Synchronisation partielle"
                                 }
@@ -581,9 +579,9 @@ private fun CoachAppContent(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text("Programme du jour", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        today.blocks.forEachIndexed { index, block ->
-            val blockCompletedSets = completedSetsByBlock.getOrElse(index) { 0 }
-            PlannedExerciseCard(
+            today.blocks.forEachIndexed { index, block ->
+                val blockCompletedSets = completedSetsByBlock.getOrElse(index) { 0 }
+                PlannedExerciseCard(
                     block = block,
                     isCurrent = index == currentBlockIndex && !sessionDone,
                     isCompleted = blockCompletedSets >= sessionSetsByBlock[index].size,
@@ -592,6 +590,8 @@ private fun CoachAppContent(
                     onFocus = { focusBlock(index) }
                 )
             }
+
+            UpcomingWorkoutsCard(upcomingWorkouts)
         }
     }
 }
@@ -633,7 +633,7 @@ private fun PageTabs(
 
 @Composable
 private fun UpcomingWorkoutsCard(workouts: List<ScheduledWorkout>) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(true) }
 
     CoachCard {
         Row(
@@ -685,7 +685,7 @@ private fun ProfileScreen(
 
     CoachCard {
         Text("Mon profil", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Text("Source locale si Health Connect n'est pas a jour", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Source locale si Samsung Health n'est pas a jour", color = MaterialTheme.colorScheme.onSurfaceVariant)
         OutlinedTextField(
             value = heightText,
             onValueChange = { heightText = it },
@@ -792,7 +792,7 @@ private fun HealthConnectCard(
     onSync: () -> Unit
 ) {
     CoachCard {
-        Text("Donnees sante", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text("Samsung Health", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = onRequestPermissions, colors = purpleOutlinedButtonColors()) {
                 Text("Autoriser")

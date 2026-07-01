@@ -13,7 +13,7 @@ Objectif d'usage : ouvrir l'application, voir le programme du jour, lancer la se
 - Series, repetitions, poids, temps de repos et progression a la volee.
 - Companion Wear OS : exercice courant, serie courante, validation, ajustement du poids, timer de repos, fin de seance.
 - Calculs science-first : volume, surcharge progressive, IMC, metabolisme basal, estimation des calories par MET.
-- Integration sante : Health Connect en priorite, Samsung Health Data SDK si besoin de donnees Samsung plus riches.
+- Integration sante : Samsung Health Data SDK en priorite, Health Connect conserve en fallback technique.
 
 ## Architecture
 
@@ -32,8 +32,8 @@ CoachApp/
 - Kotlin
 - Jetpack Compose Material 3
 - Wear Compose
-- Health Connect
-- Samsung Health Data SDK a integrer derriere une interface optionnelle
+- Samsung Health Data SDK direct via passerelle optionnelle
+- Health Connect en fallback si Samsung Health n'est pas disponible
 - Google Play Services Wearable Data Layer pour la communication telephone <-> montre
 - Gradle Kotlin DSL
 

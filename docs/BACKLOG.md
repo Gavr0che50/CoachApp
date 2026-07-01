@@ -6,15 +6,15 @@ Goal: add a phone dashboard that aggregates daily activity and CoachApp workouts
 
 Data sources:
 
-- Health Connect walking data, including steps and walking calories when available.
-- Health Connect active time and active energy expenditure when available.
+- Samsung Health walking data, including steps and walking calories when available.
+- Samsung Health active time and active energy expenditure when available.
 - CoachApp workout sessions, including estimated calories, completed sets, volume, and duration.
 
 UI target:
 
 - Add a histogram-style chart where each bar represents one day.
 - A bar should show total estimated calories burned from activity sources available that day.
-- Distinguish Health Connect activity and CoachApp workout contribution visually.
+- Distinguish Samsung Health activity and CoachApp workout contribution visually.
 - Keep missing data explicit, not silently counted as zero when permission or source data is unavailable.
 
 Notification target:
@@ -31,8 +31,8 @@ Acceptance notes:
 
 - The comparison threshold must be documented and testable.
 - The notification must not be guilt-driven.
-- Health Connect and CoachApp-derived calories must remain source-visible.
-- If Health Connect permissions are missing, the feature should still show CoachApp-only data with a clear missing-source note.
+- Samsung Health and CoachApp-derived calories must remain source-visible.
+- If Samsung Health permissions are missing, the feature should still show CoachApp-only data with a clear missing-source note.
 
 ## Session flow and exercise focus
 
@@ -58,7 +58,7 @@ Backend status:
 - Done: performed-set rows store exercise id/name, set index, planned reps, effective weight, rest duration, completion timestamp, RIR target, and source (`phone` or `wear`).
 - Done: Room migration v1 to v2 adds the new performed-set columns without destructive reset.
 - Done: repository exposes daily CoachApp activity grouped by local date with session count, completed sets, calories, duration, and volume.
-- Done: phone histogram UI reads daily CoachApp and Health Connect activity, with a vertical tab to expand all recent days.
+- Done: phone histogram UI reads daily CoachApp and Samsung Health activity, with a vertical tab to expand all recent days.
 - Done: next-morning activity insight notification compares yesterday against the recent rolling baseline with a tested 10% threshold.
 - Done: workout reminder notification is scheduled at 18:00 local time on programmed training days and skipped if a session already has completed sets that day.
 
@@ -79,6 +79,6 @@ Next validation:
 - Done: disconnected Wear debug fallback exposes the same Rep/Kg/Rest editing controls, swipe dial, +/- fallback, and +S extra-set action.
 
 Next implementation step:
-- Done: phone histogram UI reads the daily CoachApp activity query and shows CoachApp-only bars with Health Connect marked as a missing source.
-- Done: histogram merges Health Connect active-energy calories and steps as source-visible stacked contributions.
+- Done: phone histogram UI reads the daily CoachApp activity query and shows CoachApp-only bars with Samsung Health marked as a missing source.
+- Done: histogram merges Samsung Health active-energy calories and steps as source-visible stacked contributions.
 - Done: add the next-morning notification that compares yesterday against the recent rolling baseline.

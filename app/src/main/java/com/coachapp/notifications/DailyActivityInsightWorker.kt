@@ -8,7 +8,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.coachapp.data.CoachRepository
 import com.coachapp.data.local.CoachDatabase
-import com.coachapp.health.HealthConnectHealthDataGateway
+import com.coachapp.health.SamsungFirstHealthDataGateway
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,7 +22,7 @@ class DailyActivityInsightWorker(
     override suspend fun doWork(): Result {
         val database = CoachDatabase.create(applicationContext)
         val repository = CoachRepository(database)
-        val healthGateway = HealthConnectHealthDataGateway(applicationContext)
+        val healthGateway = SamsungFirstHealthDataGateway(applicationContext)
         val referenceDate = LocalDate.now().minusDays(1)
         val fromDate = referenceDate.minusDays(DailyInsightBaselineDays.toLong())
 
@@ -30,7 +30,7 @@ class DailyActivityInsightWorker(
             .associateBy { LocalDate.parse(it.dateIso) }
 
         val healthByDate = if (
-            HealthConnectHealthDataGateway.DAILY_ACTIVITY_READ_PERMISSIONS
+            SamsungFirstHealthDataGateway.DAILY_ACTIVITY_READ_PERMISSIONS
                 .all { it in healthGateway.grantedPermissions() }
         ) {
             healthGateway.dailyActivity(from = fromDate, to = referenceDate)
