@@ -39,17 +39,17 @@ CoachApp/
 
 ## Demarrage local
 
-Pre-requis : Android Studio recent, JDK 17, Android SDK avec API 37 si disponible.
+Pre-requis : Android Studio recent ou Android SDK command-line tools, JDK 17,
+Android SDK Platform 37.0 et Build Tools 36.0.0.
 
 ```bash
-gradle :app:assembleDebug :wear:assembleDebug
+./gradlew projectCheck
 ```
 
-Le depot ne contient pas encore le JAR binaire du Gradle Wrapper. Premiere tache agent recommandee :
+Sous Windows PowerShell :
 
-```bash
-gradle wrapper --gradle-version 9.4.1
-./gradlew :app:assembleDebug :wear:assembleDebug
+```powershell
+.\gradlew.bat projectCheck
 ```
 
 ## Regles importantes

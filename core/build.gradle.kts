@@ -11,3 +11,11 @@ android {
         minSdk = 29
     }
 }
+
+kotlin {
+    jvmToolchain(17)
+}
+
+dependencies {
+    testImplementation(libs.junit)
+}

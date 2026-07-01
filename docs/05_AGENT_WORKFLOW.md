@@ -34,3 +34,5 @@
 8. Ajouter integration Samsung Health Data SDK si necessaire.
 9. Ajouter notification de resume.
 10. Ajouter assets d'exercices licencies.
+
+Voir aussi `docs/BACKLOG.md` pour les demandes produit a planifier apres le MVP de base.

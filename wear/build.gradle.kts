@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+}
+
+val releaseKeystoreProperties = Properties().apply {
+    val propertiesFile = rootProject.file("keystore.properties")
+    if (propertiesFile.exists()) {
+        propertiesFile.inputStream().use(::load)
+    }
 }
 
 android {
@@ -13,12 +22,33 @@ android {
         minSdk = 30
         targetSdk = 37
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = releaseKeystoreProperties["storeFile"]?.toString()?.let { rootProject.file(it) }
+            storePassword = releaseKeystoreProperties["storePassword"]?.toString()
+            keyAlias = releaseKeystoreProperties["keyAlias"]?.toString()
+            keyPassword = releaseKeystoreProperties["keyPassword"]?.toString()
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isDebuggable = false
+        }
     }
 
     buildFeatures {
         compose = true
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {

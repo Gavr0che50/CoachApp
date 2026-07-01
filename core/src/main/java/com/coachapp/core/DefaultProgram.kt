@@ -79,8 +79,8 @@ object DefaultProgram {
                 name = name,
                 muscles = muscles,
                 equipment = equipment,
-                illustrationAsset = "assets/exercises/$id.svg",
-                videoAsset = "assets/exercises/$id.mp4"
+            illustrationAsset = "exercises/$id.jpg",
+            videoAsset = null
             ),
             sets = (1..sets).map { index ->
                 SetTarget(
