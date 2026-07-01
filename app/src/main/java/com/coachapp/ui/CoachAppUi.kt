@@ -591,8 +591,9 @@ private fun CoachAppContent(
                 )
             }
 
-            UpcomingWorkoutsCard(upcomingWorkouts)
         }
+
+        UpcomingWorkoutsCard(upcomingWorkouts)
     }
 }
 }
