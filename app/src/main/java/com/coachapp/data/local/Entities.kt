@@ -144,5 +144,6 @@ data class UserProfileEntity(
     val weightKg: Double?,
     val ageYears: Int?,
     val trainingDaysIsoCsv: String,
+    val targetSessionMinutes: Int,
     val updatedAtEpochMillis: Long
 )

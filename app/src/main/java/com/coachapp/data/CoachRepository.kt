@@ -96,6 +96,7 @@ class CoachRepository(
             weightKg = input.weightKg?.takeIf { it > 0.0 },
             ageYears = input.ageYears?.takeIf { it in 13..100 },
             trainingDaysIsoCsv = sanitizeTrainingDays(input.trainingDaysIso).joinToString(","),
+            targetSessionMinutes = sanitizeTargetSessionMinutes(input.targetSessionMinutes),
             updatedAtEpochMillis = System.currentTimeMillis()
         )
         dao.upsertUserProfile(entity)
@@ -202,6 +203,7 @@ private fun UserProfileEntity.toUserProfileSnapshot(): UserProfileSnapshot =
             .mapNotNull { it.toIntOrNull() }
             .toSet()
             .let(::sanitizeTrainingDays),
+        targetSessionMinutes = sanitizeTargetSessionMinutes(targetSessionMinutes),
         updatedAtEpochMillis = updatedAtEpochMillis
     )
 

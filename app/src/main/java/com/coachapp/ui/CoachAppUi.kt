@@ -49,14 +49,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.coachapp.core.DefaultProgram
 import com.coachapp.core.ExerciseBlock
+import com.coachapp.core.ScheduledWorkout
 import com.coachapp.core.Science
 import com.coachapp.core.SetTarget
+import com.coachapp.core.TrainingSchedule
 import com.coachapp.core.WatchSessionState
 import com.coachapp.core.WorkoutDay
 import com.coachapp.data.CompletedSetRecord
 import com.coachapp.data.DailyCoachActivitySnapshot
+import com.coachapp.data.DefaultTargetSessionMinutes
 import com.coachapp.data.DefaultTrainingDaysIso
 import com.coachapp.data.SessionSummarySnapshot
 import com.coachapp.data.UserProfileInput
@@ -139,6 +141,7 @@ fun CoachAppUi(
             weightKg = input.weightKg,
             ageYears = input.ageYears,
             trainingDaysIso = input.trainingDaysIso,
+            targetSessionMinutes = input.targetSessionMinutes ?: DefaultTargetSessionMinutes,
             updatedAtEpochMillis = System.currentTimeMillis()
         )
     },
@@ -174,11 +177,23 @@ private fun CoachAppContent(
     onSessionStateChanged: (WatchSessionState) -> Unit,
     onSessionFinished: suspend (WorkoutDay, Long, Long, List<CompletedSetRecord>, Double) -> SessionSummarySnapshot?
 ) {
-    val today = remember { DefaultProgram.dayForIsoDay(LocalDate.now().dayOfWeek.value) }
-    val scope = rememberCoroutineScope()
-    var selectedPage by remember { mutableStateOf(CoachPage.Session) }
+    val todayDate = LocalDate.now()
     var profile by remember { mutableStateOf<UserProfileSnapshot?>(null) }
     var profileStatus by remember { mutableStateOf<String?>(null) }
+    val trainingDays = profile?.trainingDaysIso ?: DefaultTrainingDaysIso
+    val targetSessionMinutes = profile?.targetSessionMinutes ?: DefaultTargetSessionMinutes
+    val upcomingWorkouts = remember(trainingDays, targetSessionMinutes, todayDate) {
+        TrainingSchedule.nextWorkouts(
+            from = todayDate,
+            trainingDaysIso = trainingDays,
+            targetMinutes = targetSessionMinutes,
+            count = 3
+        )
+    }
+    val nextScheduledWorkout = upcomingWorkouts.first()
+    val today = nextScheduledWorkout.workoutDay
+    val scope = rememberCoroutineScope()
+    var selectedPage by remember { mutableStateOf(CoachPage.Session) }
     val sessionSetsByBlock = remember(today) {
         today.blocks.map { block ->
             mutableStateListOf<SessionSetTarget>().apply {
@@ -473,6 +488,13 @@ private fun CoachAppContent(
         } else {
         Text(today.title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
             Text("${today.targetMinutes} min - $totalSets series", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (nextScheduledWorkout.date != todayDate) {
+                Text(
+                    "Prochaine seance: ${formatScheduleDate(nextScheduledWorkout.date)}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            UpcomingWorkoutsCard(upcomingWorkouts)
 
             HealthConnectCard(
                 status = healthSyncStatus,
@@ -610,6 +632,42 @@ private fun PageTabs(
 }
 
 @Composable
+private fun UpcomingWorkoutsCard(workouts: List<ScheduledWorkout>) {
+    var expanded by remember { mutableStateOf(false) }
+
+    CoachCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("3 prochains entrainements", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            OutlinedButton(onClick = { expanded = !expanded }, colors = purpleOutlinedButtonColors()) {
+                Text(if (expanded) "Masquer" else "Voir")
+            }
+        }
+
+        if (expanded) {
+            workouts.forEach { scheduled ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "${formatScheduleDate(scheduled.date)} - ${scheduled.workoutDay.title}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${scheduled.workoutDay.targetMinutes} min - " +
+                            scheduled.workoutDay.blocks.joinToString(" | ") { block ->
+                                "${block.exercise.name} (${block.sets.size}x)"
+                            },
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ProfileScreen(
     profile: UserProfileSnapshot?,
     status: String?,
@@ -618,6 +676,9 @@ private fun ProfileScreen(
     var heightText by remember(profile) { mutableStateOf(profile?.heightCm?.formatOneDecimal().orEmpty()) }
     var weightText by remember(profile) { mutableStateOf(profile?.weightKg?.formatOneDecimal().orEmpty()) }
     var ageText by remember(profile) { mutableStateOf(profile?.ageYears?.toString().orEmpty()) }
+    var targetSessionMinutesText by remember(profile) {
+        mutableStateOf((profile?.targetSessionMinutes ?: DefaultTargetSessionMinutes).toString())
+    }
     var selectedDays by remember(profile) {
         mutableStateOf(profile?.trainingDaysIso ?: DefaultTrainingDaysIso)
     }
@@ -646,6 +707,13 @@ private fun ProfileScreen(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
+        OutlinedTextField(
+            value = targetSessionMinutesText,
+            onValueChange = { targetSessionMinutesText = it },
+            label = { Text("Duree seance min") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
         Text("Jours d'entrainement", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         TrainingDayCalendar(
             selectedDays = selectedDays,
@@ -661,12 +729,13 @@ private fun ProfileScreen(
             onClick = {
                 onSave(
                     UserProfileInput(
-                        heightCm = heightText.toDoubleOrNull(),
-                        weightKg = weightText.toDoubleOrNull(),
-                        ageYears = ageText.toIntOrNull(),
-                        trainingDaysIso = selectedDays
-                    )
+                    heightCm = heightText.toDoubleOrNull(),
+                    weightKg = weightText.toDoubleOrNull(),
+                    ageYears = ageText.toIntOrNull(),
+                    trainingDaysIso = selectedDays,
+                    targetSessionMinutes = targetSessionMinutesText.toIntOrNull()
                 )
+            )
             },
             colors = purpleButtonColors()
         ) {
@@ -1141,6 +1210,13 @@ private fun formatActivityDate(dateIso: String): String {
     return runCatching {
         LocalDate.parse(dateIso).format(formatter)
     }.getOrDefault(dateIso)
+}
+
+private fun formatScheduleDate(date: LocalDate): String {
+    val dayLabel = TrainingDayLabels.firstOrNull { it.first == date.dayOfWeek.value }?.second
+        ?: date.dayOfWeek.value.toString()
+    val formatter = DateTimeFormatter.ofPattern("dd/MM")
+    return "$dayLabel ${date.format(formatter)}"
 }
 
 private fun formatTimer(totalSeconds: Int): String {
